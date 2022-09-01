@@ -71,8 +71,11 @@ impl AsyncSessionStream for TcpStream {
         expected_block_directions: BlockDirections,
         sleep_dur: Option<Duration>,
     ) -> Poll<Result<R, IoError>> {
+        println!("HERE");
         match op() {
-            Err(err) if err.kind() == IoErrorKind::WouldBlock => {}
+            Err(err) if err.kind() == IoErrorKind::WouldBlock => {
+                println!("WOULD BLOCK");
+            }
             ret => return Poll::Ready(ret),
         }
 
@@ -94,8 +97,12 @@ impl AsyncSessionStream for TcpStream {
                 assert!(expected_block_directions.is_readable());
                 assert!(expected_block_directions.is_writable());
 
-                ready!(self.poll_write_ready(cx))?;
-                ready!(self.poll_read_ready(cx))?;
+                match self.poll_write_ready(cx) {
+                    Poll::Pending => {
+                        ready!(self.poll_read_ready(cx))?;
+                    }
+                    Poll::Ready(val) => val?,
+                }
             }
         }
 

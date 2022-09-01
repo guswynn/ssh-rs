@@ -118,7 +118,7 @@ pub trait AsyncSessionStream {
             cx,
             op,
             sess,
-            BlockDirections::Both,
+            BlockDirections::Outbound,
             Some(Duration::from_millis(1)),
         )
     }

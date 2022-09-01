@@ -723,6 +723,8 @@ pub(crate) fn get_session(
 ) -> Result<Session, Error> {
     let session = Session::new()?;
     session.set_blocking(false);
+    let flags = ssh2::TraceFlags::all();
+    session.trace(flags);
 
     if let Some(configuration) = configuration.into() {
         if let Some(banner) = configuration.banner {

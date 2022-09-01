@@ -338,6 +338,7 @@ mod impl_tokio {
             let sess = this.sess.clone();
             let inner = &mut this.inner;
 
+            let pre = buf.filled().len();
             this.stream.poll_read_with(
                 cx,
                 || {
@@ -345,9 +346,11 @@ mod impl_tokio {
                     match size {
                         Ok(size) => {
                             buf.advance(size);
+                            println!("async-ssh2-lite: READ {} bytes", size);
+                            hexdump::hexdump(&buf.filled()[pre..]);
                             Ok(())
                         }
-                        Err(e) => Err(e),
+                        Err(e) => Err(dbg!(e)),
                     }
                 },
                 &sess,
@@ -368,7 +371,8 @@ mod impl_tokio {
             let sess = this.sess.clone();
             let inner = &mut this.inner;
 
-            this.stream.poll_write_with(cx, || inner.write(buf), &sess)
+            this.stream
+                .poll_write_with(cx, || dbg!(inner.write(buf)), &sess)
         }
 
         fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), IoError>> {
@@ -376,10 +380,12 @@ mod impl_tokio {
             let sess = this.sess.clone();
             let inner = &mut this.inner;
 
-            this.stream.poll_write_with(cx, || inner.flush(), &sess)
+            this.stream
+                .poll_write_with(cx, || dbg!(inner.flush()), &sess)
         }
 
         fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), IoError>> {
+            println!("HMM");
             self.poll_flush(cx)
         }
     }
